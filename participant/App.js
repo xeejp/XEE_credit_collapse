@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 
+import ExitButton from './ExitButton'
+import Information from './Information'
+
 const mapStateToProps = ({}) => {
     return {
     }
@@ -18,6 +21,8 @@ class App extends Component {
 
     render() {
         return <div>
+            <Information />
+            <ExitButton />
         </div>
     }
 }

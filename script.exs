@@ -21,6 +21,7 @@ defmodule ChickenRace do
        started: false,
        experiment_type: "no_interaction",
        participants: %{},
+       exited_users: 0,
        host_log: [],
        participant_log: []
      }}}
@@ -58,7 +59,9 @@ defmodule ChickenRace do
       type: "UPDATE_CONTENTS",
       started: data.started,
       answered: data.participants[id] != nil,
-      experiment_type: data.experiment_type
+      experiment_type: data.experiment_type,
+      users: Map.size(data.participants),
+      exited_users: data.exited_users
     }
     {:ok, %{"data" => data, "participant" => %{id => %{action: action}}}}
   end
@@ -69,17 +72,20 @@ defmodule ChickenRace do
       type: "CHANGE_TYPE",
       experiment_type: data.experiment_type,
     }
-    {host, participant} = dispatch_to_all(data.participants, action)
-    {:ok, %{"data" => data, "host" => host, "participant" => participant}}
+    participant = dispatch_to_all(data.participants, action)
+    {:ok, %{"data" => data, "host" => %{action: action}, "participant" => participant}}
   end
 
   def handle_received(data, %{"action" => "start"}) do
-    data = %{data | started: true}
+    data = %{data | started: true, exited_users: 0}
     action = %{
       type: "START"
     }
-    {host, participant} = dispatch_to_all(data.participants, action)
-    {:ok, %{"data" => data, "host" => host, "participant" => participant}}
+    participant = dispatch_to_all(data.participants, action
+                  |> Map.put(:users, Map.size(data.participants))
+                  |> Map.put(:exited_users, data.exited_users)
+    )
+    {:ok, %{"data" => data, "host" => %{action: action}, "participant" => participant}}
   end
 
   def handle_received(data, %{"action" => "stop"}) do
@@ -87,12 +93,30 @@ defmodule ChickenRace do
     action = %{
       type: "STOP"
     }
-    {host, participant} = dispatch_to_all(data.participants, action)
-    {:ok, %{"data" => data, "host" => host, "participant" => participant}}
+    participant = dispatch_to_all(data.participants, action)
+    {:ok, %{"data" => data, "host" => %{action: action}, "participant" => participant}}
   end
 
-  def dispatch_to_all(participants, action), do: {
-    %{action: action},
-    Enum.map(participants, fn {id, _} -> {id, %{action: action}} end) |> Enum.into(%{})
-  }
+  def handle_received(data, %{"action" => "exit", "params" => %{"time" => time} = params}, id) do
+    # if the user haven't exited yet
+    if data.participants[id] == nil do
+      data = data
+              |> put_in([:participants, id], params)
+              |> Map.update!(:exited_users, &(&1 + 1))
+      host_action = %{
+        type: "UPDATE_USER",
+        id: id, user: data.participants[id]
+      }
+      participant = dispatch_to_all(data.participants, %{
+        type: "UPDATE_USERS",
+        users: Map.size(data.participants),
+        exited_users: data.exited_users
+      })
+      {:ok, %{"data" => data, "host" => %{action: host_action}, "participant" => participant}}
+    end
+    {:ok, %{"data" => data}}
+  end
+
+  def dispatch_to_all(participants, action) , do: Enum.map(participants, fn {id, _} ->
+    {id, %{action: action}} end) |> Enum.into(%{})
 end

@@ -1,5 +1,5 @@
 module.exports = [{
-    entry: ["./host/index.js"],
+    entry: ["./host/index.js", "babel-polyfill"],
     output: {
         path: "./",
         filename: "host.js"
@@ -20,7 +20,7 @@ module.exports = [{
         ]
     }
 }, {
-    entry: ["./participant/index.js"],
+    entry: ["./participant/index.js", "babel-polyfill"],
     output: {
         path: "./",
         filename: "participant.js"

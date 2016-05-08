@@ -1,7 +1,7 @@
 const initialState = {
     started: false,
     experiment_type: "no_interaction",
-    users: []
+    users: [],
 }
 
 function reducer(state = initialState, action) {
