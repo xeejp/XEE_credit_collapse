@@ -5,7 +5,8 @@ const initialState = {
     exitedUsers: 0,
     started: false,
     started_time: null,
-    answerd: false,
+    answered: false,
+    punished: false,
     program: [], // list of times computer will leave
 }
 
@@ -25,7 +26,8 @@ function reducer(state = initialState, action) {
             return Object.assign({}, state, {
                 experiment_type: action.experiment_type,
                 started: action.started,
-                answerd: action.answerd,
+                answered: action.answered,
+                punished: action.punished,
                 users: action.users,
                 exitedUsers: action.exited_users
             })
@@ -37,7 +39,8 @@ function reducer(state = initialState, action) {
         case 'START':
             return Object.assign({}, state, {
                 started: true,
-                started: false,
+                answered: false,
+                punished: false,
                 started_time: moment(),
                 users: action.users,
                 exitedUsers: action.exited_users
@@ -45,6 +48,10 @@ function reducer(state = initialState, action) {
         case 'STOP':
             return Object.assign({}, state, {
                 started: false
+            })
+        case 'PUNISHED':
+            return Object.assign({}, state, {
+                punished: true
             })
         default:
             return state

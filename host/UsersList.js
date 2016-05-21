@@ -13,6 +13,11 @@ const UsersList = ({ users }) => <List>
     {Object.keys(users).map((id) => <ListItem
         key={id}
         primaryText={id}
+        secondaryText={
+            users[id]
+                ? (users[id] == "punished" ? "punished" : "exited")
+                : "not exited"
+        }
     />)}
 </List>
 

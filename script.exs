@@ -22,6 +22,7 @@ defmodule ChickenRace do
        experiment_type: "no_interaction",
        participants: %{},
        exited_users: 0,
+       prize: 0,
        host_log: [],
        participant_log: []
      }}}
@@ -31,7 +32,6 @@ defmodule ChickenRace do
     if not Map.has_key?(participants, id) do
       participants = Map.put(participants, id, nil)
       data = %{data | participants: participants}
-      IO.puts 1
       action = %{
         type: "ADD_USER",
         id: id,
@@ -39,7 +39,6 @@ defmodule ChickenRace do
       }
       {:ok, %{"data" => data, "host" => %{action: action}}}
     else
-      IO.puts 2
       {:ok, %{"data" => data}}
     end
   end
@@ -59,6 +58,7 @@ defmodule ChickenRace do
       type: "UPDATE_CONTENTS",
       started: data.started,
       answered: data.participants[id] != nil,
+      punished: data.participants[id] == :punished,
       experiment_type: data.experiment_type,
       users: Map.size(data.participants),
       exited_users: data.exited_users
@@ -77,9 +77,11 @@ defmodule ChickenRace do
   end
 
   def handle_received(data, %{"action" => "start"}) do
-    data = %{data | started: true, exited_users: 0}
+    participants = Enum.map(data.participants, fn {id, _} -> {id, nil} end) |> Enum.into(%{})
+    data = %{data | started: true, exited_users: 0, participants: participants}
     action = %{
-      type: "START"
+      type: "START",
+      users: data.participants
     }
     participant = dispatch_to_all(data.participants, action
                   |> Map.put(:users, Map.size(data.participants))
@@ -101,7 +103,7 @@ defmodule ChickenRace do
     # if the user haven't exited yet
     if data.participants[id] == nil do
       data = data
-              |> put_in([:participants, id], params)
+              |> put_in([:participants, id], Map.put(params, :prize, data.prize))
               |> Map.update!(:exited_users, &(&1 + 1))
       host_action = %{
         type: "UPDATE_USER",
@@ -112,9 +114,20 @@ defmodule ChickenRace do
         users: Map.size(data.participants),
         exited_users: data.exited_users
       })
+      if Map.size(data.participants) == data.exited_users + 1 do
+        {id, nil} = Enum.find(data.participants, fn {id, value} -> value == nil end)
+        data = put_in(data, [:participants, id], :punished)
+        host_action = Map.put(host_action, :users, data.participants)
+        participant = %{participant | id => %{
+          action: %{
+            type: "PUNISHED"
+          }
+        }}
+      end
       {:ok, %{"data" => data, "host" => %{action: host_action}, "participant" => participant}}
+    else
+      {:ok, %{"data" => data}}
     end
-    {:ok, %{"data" => data}}
   end
 
   def dispatch_to_all(participants, action) , do: Enum.map(participants, fn {id, _} ->

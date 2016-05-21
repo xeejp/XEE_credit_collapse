@@ -30,12 +30,19 @@ function reducer(state = initialState, action) {
         case 'UPDATE_USER':
             var user = {}
             user[action.id] = action.user
+            let users = action.users
+            if (users) {
+                return Object.assign({}, state, {
+                    users: users
+                })
+            }
             return Object.assign({}, state, {
                 users: Object.assign({}, state.users, user)
             })
         case 'START':
             return Object.assign({}, state, {
-                started: true
+                started: true,
+                users: action.users
             })
         case 'STOP':
             return Object.assign({}, state, {
