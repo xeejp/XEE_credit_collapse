@@ -5,25 +5,26 @@ import moment from 'moment'
 
 import RaisedButton from 'material-ui/RaisedButton'
 
-const mapStateToProps = ({ started, started_time, answered, punished }) => {
+const mapStateToProps = ({ started, answered, punished, exitedUsers, prize }) => {
     return {
         started,
-        started_time,
         answered,
-        punished
+        punished,
+        exitedUsers,
+        prize
     }
 }
 
-function exit(dispatch, started_time) {
+function exit(dispatch, exitedUsers, prize) {
     let time = moment();
-    dispatch({type: 'ANSWER'});
-    sendData("exit", { time, startedTime: started_time });
+    dispatch({type: 'ANSWER', time, prize});
+    sendData("exit", { time, exitedUsers, prize });
 }
 
-const ExitButton = ({ started, started_time, dispatch, answered, punished }) => started && !punished && !answered
+const ExitButton = ({ started, dispatch, answered, punished, exitedUsers, prize }) => started && !punished && !answered
 ? <RaisedButton
     label="退出する"
-    onClick={exit.bind(null, dispatch, started_time)}
+    onClick={exit.bind(null, dispatch, exitedUsers, prize)}
 />
 : null
 

@@ -1,13 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
-const mapStateToProps = ({ users }) => {
+const mapStateToProps = ({ users, prize }) => {
     return {
-        users
+        users, prize
     }
 }
 
-const Status = ({ users }) => <div>
+const Status = ({ users, prize }) => <div>
+    {
+        <p>現在の報酬は{prize}です。</p>
+    }
     {(() => {
         let exited = 0;
         const keys = Object.keys(users)

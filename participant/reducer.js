@@ -8,13 +8,20 @@ const initialState = {
     answered: false,
     punished: false,
     program: [], // list of times computer will leave
+    prize: 0,
+    receivedPrize: 0
 }
 
 function reducer(state = initialState, action) {
     switch (action.type) {
+        case 'UPDATE_PRIZE':
+            return Object.assign({}, state, {
+                prize: action.prize
+            })
         case 'ANSWER':
             return Object.assign({}, state, {
-                answered: true
+                answered: true,
+                receivedPrize: action.prize
             })
         case 'CHANGE_TYPE':
             return Object.assign({}, state, {
@@ -29,7 +36,9 @@ function reducer(state = initialState, action) {
                 answered: action.answered,
                 punished: action.punished,
                 users: action.users,
-                exitedUsers: action.exited_users
+                exitedUsers: action.exited_users,
+                prize: action.prize,
+                receivedPrize: action.received_prize
             })
         case 'UPDATE_USERS':
             return Object.assign({}, state, {

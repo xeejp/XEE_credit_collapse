@@ -1,43 +1,25 @@
-module.exports = [{
-    entry: ["./host/index.js", "babel-polyfill"],
-    output: {
-        path: "./",
-        filename: "host.js"
-    },
-    module: {
-        loaders: [{
-            test: /\.jsx?$/,
-            exclude: /node_modules/,
-            loader: "babel"
-        }]
-    },
-    resolve: {
-        extensions: [
-            "", ".js"
-        ],
-        modulesDirectories: [
-            "node_modules",
-        ]
-    }
-}, {
-    entry: ["./participant/index.js", "babel-polyfill"],
-    output: {
-        path: "./",
-        filename: "participant.js"
-    },
-    module: {
-        loaders: [{
-            test: /\.jsx?$/,
-            exclude: /node_modules/,
-            loader: "babel"
-        }]
-    },
-    resolve: {
-        extensions: [
-            "", ".js"
-        ],
-        modulesDirectories: [
-            "node_modules",
-        ]
-    }
-}];
+module.exports = {
+  entry: {
+    host: ["babel-polyfill", "./host/index.js"],
+    participant: ["babel-polyfill", "./participant/index.js"],
+  },
+  output: {
+    path: "./",
+    filename: "[name].js"
+  },
+  module: {
+    loaders: [{
+      test: /\.jsx?$/,
+      exclude: /node_modules/,
+      loader: "babel"
+    }]
+  },
+  resolve: {
+    extensions: [
+      "", ".js"
+    ],
+    modulesDirectories: [
+      "node_modules",
+    ]
+  }
+};

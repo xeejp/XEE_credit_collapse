@@ -49,21 +49,9 @@ defmodule ChickenRace do
       started: data.started,
       experiment_type: data.experiment_type,
       users: data.participants,
+      prize: data.prize
     }
     {:ok, %{"data" => data, "host" => %{action: action}}}
-  end
-
-  def handle_received(data, %{"action" => "fetchContents"}, id) do
-    action = %{
-      type: "UPDATE_CONTENTS",
-      started: data.started,
-      answered: data.participants[id] != nil,
-      punished: data.participants[id] == :punished,
-      experiment_type: data.experiment_type,
-      users: Map.size(data.participants),
-      exited_users: data.exited_users
-    }
-    {:ok, %{"data" => data, "participant" => %{id => %{action: action}}}}
   end
 
   def handle_received(data, %{"action" => "changeType", "params" => type}) do
@@ -99,7 +87,32 @@ defmodule ChickenRace do
     {:ok, %{"data" => data, "host" => %{action: action}, "participant" => participant}}
   end
 
-  def handle_received(data, %{"action" => "exit", "params" => %{"time" => time} = params}, id) do
+  def handle_received(data, %{"action" => "updatePrize", "params" => %{"prize" => prize}}) do
+    data = %{data | prize: prize}
+    action = %{
+      type: "UPDATE_PRIZE",
+      prize: data.prize
+    }
+    participant = dispatch_to_all(data.participants, action)
+    {:ok, %{"data" => data, "host" => %{action: action}, "participant" => participant}}
+  end
+
+  def handle_received(data, %{"action" => "fetchContents"}, id) do
+    action = %{
+      type: "UPDATE_CONTENTS",
+      started: data.started,
+      answered: data.participants[id] != nil,
+      punished: data.participants[id] == :punished,
+      experiment_type: data.experiment_type,
+      users: Map.size(data.participants),
+      exited_users: data.exited_users,
+      prize: data.prize,
+      received_prize: is_map(data.participants[id]) and Map.get(data.participants[id], "prize")
+    }
+    {:ok, %{"data" => data, "participant" => %{id => %{action: action}}}}
+  end
+
+  def handle_received(data, %{"action" => "exit", "params" => params}, id) do
     # if the user haven't exited yet
     if data.participants[id] == nil do
       data = data

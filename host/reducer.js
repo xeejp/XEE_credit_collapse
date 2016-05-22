@@ -2,10 +2,15 @@ const initialState = {
     started: false,
     experiment_type: "no_interaction",
     users: [],
+    prize: 0
 }
 
 function reducer(state = initialState, action) {
     switch (action.type) {
+        case 'UPDATE_PRIZE':
+            return Object.assign({}, state, {
+                prize: action.prize
+            })
         case 'CHANGE_TYPE':
             return Object.assign({}, state, {
                 started: false,
@@ -15,7 +20,8 @@ function reducer(state = initialState, action) {
             return Object.assign({}, state, {
                 started: action.started,
                 experiment_type: action.experiment_type,
-                users: action.users
+                users: action.users,
+                prize: action.prize
             })
         case 'SET_USERS':
             return Object.assign({}, state, {
@@ -42,7 +48,8 @@ function reducer(state = initialState, action) {
         case 'START':
             return Object.assign({}, state, {
                 started: true,
-                users: action.users
+                users: action.users,
+                prize: 0
             })
         case 'STOP':
             return Object.assign({}, state, {
