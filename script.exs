@@ -50,7 +50,8 @@ defmodule ChickenRace do
       started: data.started,
       experiment_type: data.experiment_type,
       users: data.participants,
-      prize: data.prize
+      prize: data.prize,
+      exited_users: data.exited_users
     }
     {:ok, %{"data" => data, "host" => %{action: action}}}
   end
@@ -101,6 +102,53 @@ defmodule ChickenRace do
     }
     participant = dispatch_to_all(data.participants, action)
     {:ok, %{"data" => data, "host" => %{action: action}, "participant" => participant}}
+  end
+
+  def handle_received(data, %{"action" => "exit"}) do
+    if data.started and not data.punished do
+      data = data
+              |> Map.update!(:exited_users, fn x -> x + 1 end)
+      participant = dispatch_to_all(data.participants, %{
+        type: "UPDATE_USERS",
+        users: Map.size(data.participants),
+        exited_users: data.exited_users
+      })
+      host_action = %{
+        type: "UPDATE_EXITED_USER",
+        exited_users: data.exited_users
+      }
+      if Map.size(data.participants) == data.exited_users + 1 do
+        participants = Enum.map(data.participants, fn {id, value} ->
+          if value == nil do
+            {id, :punished}
+          else
+            {id, value}
+          end
+        end) |> Enum.into(%{})
+        participant = Enum.map(participants, fn {id, value} ->
+          value = if value == :punished do
+            %{action: %{
+              type: "PUNISHED"
+            }}
+          else
+            %{action: %{
+              type: "UPDATE_USERS",
+              users: Map.size(data.participants),
+              exited_users: data.exited_users
+            }}
+          end
+          {id, value}
+        end) |> Enum.into(%{})
+        data = %{data | participants: participants, punished: true}
+        host_action = %{
+          type: "UPDATE_USER",
+          users: data.participants
+        }
+      end
+      {:ok, %{"data" => data, "host" => %{action: host_action}, "participant" => participant}}
+    else
+      {:ok, %{"data" => data}}
+    end
   end
 
   def handle_received(data, %{"action" => "fetchContents"}, id) do

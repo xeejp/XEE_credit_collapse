@@ -14,8 +14,6 @@ const mapStateToProps = ({ users, exitedUsers, started, punished, answered, priz
 }
 
 const Information = ({ users, exitedUsers, started, punished, answered, prize, receivedPrize }) => <div>
-    {
-    }
     {punished
         ? <p>あなたは最後の一人だったため処罰を受けました</p>
         : started
