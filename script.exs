@@ -24,12 +24,13 @@ defmodule ChickenRace do
        exited_users: 0,
        prize: 0,
        host_log: [],
-       participant_log: []
+       participant_log: [],
+       punished: false
      }}}
   end
 
   def join(%{participants: participants} = data, id) do
-    if not Map.has_key?(participants, id) do
+    if not Map.has_key?(participants, id) and not data.started do
       participants = Map.put(participants, id, nil)
       data = %{data | participants: participants}
       action = %{
@@ -66,7 +67,12 @@ defmodule ChickenRace do
 
   def handle_received(data, %{"action" => "start"}) do
     participants = Enum.map(data.participants, fn {id, _} -> {id, nil} end) |> Enum.into(%{})
-    data = %{data | started: true, exited_users: 0, participants: participants}
+    data = %{data |
+     started: true,
+     exited_users: 0,
+     participants: participants,
+     punished: false
+   }
     action = %{
       type: "START",
       users: data.participants
@@ -114,7 +120,7 @@ defmodule ChickenRace do
 
   def handle_received(data, %{"action" => "exit", "params" => params}, id) do
     # if the user haven't exited yet
-    if data.participants[id] == nil do
+    if data.participants[id] == nil and not data.punished do
       data = data
               |> put_in([:participants, id], Map.put(params, :prize, data.prize))
               |> Map.update!(:exited_users, &(&1 + 1))
@@ -129,7 +135,9 @@ defmodule ChickenRace do
       })
       if Map.size(data.participants) == data.exited_users + 1 do
         {id, nil} = Enum.find(data.participants, fn {id, value} -> value == nil end)
-        data = put_in(data, [:participants, id], :punished)
+        data = data
+                |> put_in([:participants, id], :punished)
+                |> Map.put(:punished, true)
         host_action = Map.put(host_action, :users, data.participants)
         participant = %{participant | id => %{
           action: %{
