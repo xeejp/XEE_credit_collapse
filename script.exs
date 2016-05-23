@@ -1,13 +1,18 @@
 defmodule ChickenRace do
   use Xee.ThemeScript
 
-  @experiment_types [
-    "no_interaction",
-    "no_interaction_and_information",
-    "no_interaction_with_optimal",
+  @interaction [
     "interaction",
     "interaction_with_no_information"
   ]
+
+  @no_interaction [
+    "no_interaction",
+    "no_interaction_and_information",
+    "no_interaction_with_optimal"
+  ]
+
+  @experiment_types @interaction ++ @no_interaction
 
   # Callbacks
   def script_type do
@@ -25,7 +30,7 @@ defmodule ChickenRace do
        prize: 0,
        host_log: [],
        participant_log: [],
-       punished: false
+       punished: false,
      }}}
   end
 
@@ -151,6 +156,53 @@ defmodule ChickenRace do
     end
   end
 
+  def handle_received(data, %{"action" => "exitAll"}) do
+    if data.started and not data.punished do
+      data = data
+              |> Map.put(:exited_users, Map.size(data.participants) - 1)
+      participant = dispatch_to_all(data.participants, %{
+        type: "UPDATE_USERS",
+        users: Map.size(data.participants),
+        exited_users: data.exited_users
+      })
+      host_action = %{
+        type: "UPDATE_EXITED_USER",
+        exited_users: data.exited_users
+      }
+      if Map.size(data.participants) == data.exited_users + 1 do
+        participants = Enum.map(data.participants, fn {id, value} ->
+          if value == nil do
+            {id, :punished}
+          else
+            {id, value}
+          end
+        end) |> Enum.into(%{})
+        participant = Enum.map(participants, fn {id, value} ->
+          value = if value == :punished do
+            %{action: %{
+              type: "PUNISHED"
+            }}
+          else
+            %{action: %{
+              type: "UPDATE_USERS",
+              users: Map.size(data.participants),
+              exited_users: data.exited_users
+            }}
+          end
+          {id, value}
+        end) |> Enum.into(%{})
+        data = %{data | participants: participants, punished: true}
+        host_action = %{
+          type: "UPDATE_USER",
+          users: data.participants
+        }
+      end
+      {:ok, %{"data" => data, "host" => %{action: host_action}, "participant" => participant}}
+    else
+      {:ok, %{"data" => data}}
+    end
+  end
+
   def handle_received(data, %{"action" => "fetchContents"}, id) do
     action = %{
       type: "UPDATE_CONTENTS",
@@ -168,10 +220,12 @@ defmodule ChickenRace do
 
   def handle_received(data, %{"action" => "exit", "params" => params}, id) do
     # if the user haven't exited yet
-    if data.participants[id] == nil and not data.punished do
+    if Map.get(data.participants, id, {}) == nil and not data.punished do
       data = data
               |> put_in([:participants, id], Map.put(params, :prize, data.prize))
-              |> Map.update!(:exited_users, &(&1 + 1))
+      if data.experiment_type in @interaction do
+        data = Map.update!(data, :exited_users, &(&1 + 1))
+      end
       host_action = %{
         type: "UPDATE_USER",
         id: id, user: data.participants[id]

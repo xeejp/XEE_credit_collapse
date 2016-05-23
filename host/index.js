@@ -23,29 +23,29 @@ const sagaMiddleware = createSagaMiddleware()
 let middlewares = [thunk, sagaMiddleware, logger]
 
 const store = createStore(
-    reducer,
-    applyMiddleware(...middlewares)
+  reducer,
+  applyMiddleware(...middlewares)
 )
 
-sagaMiddleware.run(saga)
+sagaMiddleware.run(saga, store.getState, store.dispatch)
 
 var _experiment = new Experiment(_topic, _token);
 
 _experiment.onReceiveMessage(({ action }) => {
-    store.dispatch(action)
+  store.dispatch(action)
 })
 
 function sendData(action, params) {
-    _experiment.send_data({ action, params });
+  _experiment.send_data({ action, params });
 }
 
 window.sendData = sendData
 
 render(
-    <Provider store={store}>
-        <MuiThemeProvider muiTheme={getMuiTheme()}>
-            <App />
-        </MuiThemeProvider>
-    </Provider>,
-    document.getElementById("content")
+  <Provider store={store}>
+    <MuiThemeProvider muiTheme={getMuiTheme()}>
+      <App />
+    </MuiThemeProvider>
+  </Provider>,
+  document.getElementById("content")
 )

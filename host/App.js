@@ -6,6 +6,7 @@ import TypesList from './TypesList'
 import StartButton from './StartButton'
 import ExitButton from './ExitButton'
 import Status from './Status'
+import LimitEditor from './LimitEditor'
 
 const mapStateToProps = ({}) => {
     return {
@@ -26,6 +27,7 @@ class App extends Component {
         return <div>
             <StartButton />
             <ExitButton />
+            <LimitEditor />
             <TypesList />
             <Status />
             <UsersList />

@@ -3,11 +3,21 @@ const initialState = {
   experiment_type: "no_interaction",
   users: [],
   prize: 0,
-  exitedUsers: 0
+  exitedUsers: 0,
+  limit: 100,
+  exitFunction: () => 1
 }
 
 function reducer(state = initialState, action) {
   switch (action.type) {
+    case 'UPDATE_LIMIT':
+      return Object.assign({}, state, {
+        limit: action.limit
+      })
+    case 'UPDATE_EXIT_FUNCTION':
+      return Object.assign({}, state, {
+        exitFunction: action.exitFunction
+      })
     case 'UPDATE_EXITED_USER':
       return Object.assign({}, state, {
         exitedUsers: action.exited_users
