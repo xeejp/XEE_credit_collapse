@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import UsersList from './UsersList'
 import TypesList from './TypesList'
 import StartButton from './StartButton'
+import ExitButton from './ExitButton'
 import Status from './Status'
 
 const mapStateToProps = ({}) => {
@@ -24,6 +25,7 @@ class App extends Component {
     render() {
         return <div>
             <StartButton />
+            <ExitButton />
             <TypesList />
             <Status />
             <UsersList />

@@ -6,11 +6,12 @@ import { List, ListItem } from 'material-ui/List'
 import RaisedButton from 'material-ui/RaisedButton'
 
 const experiment_types = [
-    "no_interaction",
-    "no_interaction_and_information",
-    "no_interaction_with_optimal",
-    "interaction",
-    "interaction_with_no_information"
+    "individual_with_information",
+    "individual_without_information",
+    "functional_with_information",
+    "functional_without_information",
+    "interactive_with_information",
+    "interaction_without_information"
 ]
 
 const mapStateToProps = ({ experiment_type }) => {

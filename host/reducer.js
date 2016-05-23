@@ -53,6 +53,7 @@ function reducer(state = initialState, action) {
       })
     case 'START':
       return Object.assign({}, state, {
+        exitedUsers: 0,
         started: true,
         users: action.users,
         prize: 0
@@ -60,6 +61,10 @@ function reducer(state = initialState, action) {
     case 'STOP':
       return Object.assign({}, state, {
         started: false
+      })
+    case 'EXIT':
+      return Object.assign({}, state, {
+        exitedUsers: action.exited_users
       })
     default:
       return state
