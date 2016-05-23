@@ -7,6 +7,7 @@ import StartButton from './StartButton'
 import ExitButton from './ExitButton'
 import Status from './Status'
 import LimitEditor from './LimitEditor'
+import CSV from './CSV'
 
 const mapStateToProps = ({}) => {
     return {
@@ -30,6 +31,7 @@ class App extends Component {
             <LimitEditor />
             <TypesList />
             <Status />
+            <CSV />
             <UsersList />
         </div>
     }
