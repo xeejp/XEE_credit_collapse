@@ -35,8 +35,8 @@ _experiment.onReceiveMessage(({ action }) => {
   store.dispatch(action)
 })
 
-function sendData(action, params) {
-  _experiment.send_data({ action, params });
+function sendData(action, params=null) {
+    _experiment.send_data({ action, params });
 }
 
 window.sendData = sendData

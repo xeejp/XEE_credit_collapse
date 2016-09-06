@@ -1,18 +1,10 @@
 defmodule ChickenRace do
   use Xee.ThemeScript
 
-  @interaction [
+  @experiment_types [
     "interaction",
     "interaction_with_no_information"
   ]
-
-  @no_interaction [
-    "no_interaction",
-    "no_interaction_and_information",
-    "no_interaction_with_optimal"
-  ]
-
-  @experiment_types @interaction ++ @no_interaction
 
   # Callbacks
   def script_type do
@@ -24,13 +16,14 @@ defmodule ChickenRace do
   def init do
     {:ok, %{"data" => %{
        started: false,
-       experiment_type: "no_interaction",
+       experiment_type: "interaction",
        participants: %{},
        exited_users: 0,
        prize: 0,
        host_log: [],
        participant_log: [],
        punished: false,
+       log: []
      }}}
   end
 
@@ -56,7 +49,8 @@ defmodule ChickenRace do
       experiment_type: data.experiment_type,
       users: data.participants,
       prize: data.prize,
-      exited_users: data.exited_users
+      exited_users: data.exited_users,
+      log: data.log
     }
     {:ok, %{"data" => data, "host" => %{action: action}}}
   end
@@ -203,6 +197,16 @@ defmodule ChickenRace do
     end
   end
 
+  def handle_received(data, %{"action" => "log"}) do
+    users = data.participants
+    data = Map.update!(data, :log, fn logs -> [users | logs] end)
+    action = %{
+      type: "UPDATE_LOG",
+      log: data.log
+    }
+    {:ok, %{"data" => data, "host" => %{action: action}}}
+  end
+
   def handle_received(data, %{"action" => "fetchContents"}, id) do
     action = %{
       type: "UPDATE_CONTENTS",
@@ -223,9 +227,7 @@ defmodule ChickenRace do
     if Map.get(data.participants, id, {}) == nil and not data.punished do
       data = data
               |> put_in([:participants, id], Map.put(params, :prize, data.prize))
-      if data.experiment_type in @interaction do
-        data = Map.update!(data, :exited_users, &(&1 + 1))
-      end
+              |> Map.update!(:exited_users, &(&1 + 1))
       host_action = %{
         type: "UPDATE_USER",
         id: id, user: data.participants[id]

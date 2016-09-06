@@ -6,9 +6,6 @@ import { List, ListItem } from 'material-ui/List'
 import RaisedButton from 'material-ui/RaisedButton'
 
 const experiment_types = [
-  "no_interaction",
-  "no_interaction_and_information",
-  "no_interaction_with_optimal",
   "interaction",
   "interaction_with_no_information"
 ]
@@ -16,6 +13,15 @@ const experiment_types = [
 const mapStateToProps = ({ experiment_type }) => {
   return {
     experiment_type
+  }
+}
+
+function getTypeText(type) {
+  switch (type) {
+    case "interaction":
+      return "情報あり"
+    case "interaction_with_no_information":
+      return "情報なし"
   }
 }
 
@@ -62,7 +68,7 @@ class TypesList extends Component {
         {experiment_types.map((type, key) => <RadioButton
           key={key}
           value={type}
-          label={type}
+          label={getTypeText(type)}
           disabled={locked}
         />)}
       </RadioButtonGroup>

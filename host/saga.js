@@ -1,4 +1,4 @@
-import { fork, take, put } from 'redux-saga/effects';
+import { fork, take, put, call } from 'redux-saga/effects';
 
 function* startCountUp(getState, prize) {
   const id = setInterval(() => {
@@ -51,8 +51,16 @@ function* exitAutomatically(getState) {
   }
 }
 
+function* log() {
+  while (true) {
+    yield take('log');
+    yield call(sendData, 'log')
+  }
+}
+
 export default function* saga(getState, dispatch) {
   yield fork(updatePrize, getState);
   yield fork(continueExperiment, getState);
   yield fork(exitAutomatically, getState);
+  yield fork(log);
 }

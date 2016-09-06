@@ -5,7 +5,8 @@ const initialState = {
   prize: 0,
   exitedUsers: 0,
   limit: 100,
-  exitFunction: () => 1
+  exitFunction: () => 1,
+  log: [],
 }
 
 function reducer(state = initialState, action) {
@@ -37,7 +38,12 @@ function reducer(state = initialState, action) {
         experiment_type: action.experiment_type,
         users: action.users,
         prize: action.prize,
-        exitedUsers: action.exited_users
+        exitedUsers: action.exited_users,
+        log: action.log
+      })
+    case 'UPDATE_LOG':
+      return Object.assign({}, state, {
+        log: action.log
       })
     case 'SET_USERS':
       return Object.assign({}, state, {
