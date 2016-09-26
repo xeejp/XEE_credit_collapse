@@ -1,5 +1,5 @@
 defmodule ChickenRace do
-  use Xee.ThemeScript
+  use XeeThemeScript
 
   @experiment_types [
     "interaction",
