@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import throttle from 'react-throttle-render'
 
 import { addLog } from './actions'
 
@@ -64,4 +65,4 @@ const Chart = ({ config, addLog }) => (
   </div>
 )
 
-export default connect(mapStateToProps, actionCreators)(Chart)
+export default connect(mapStateToProps, actionCreators)(throttle(Chart, 200))
